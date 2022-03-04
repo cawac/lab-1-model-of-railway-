@@ -1,6 +1,6 @@
 class Station:
-    def __init__(self, name, scapacity = 5, size = 25):
-        self.scapacity = scapacity
+    def __init__(self, name, capacity=5, size=25):
+        self.__capacity = capacity
         self.__size = size
         self.__name = name
 
@@ -12,13 +12,13 @@ class Station:
     def size(self, x):
         self.__size = x
 
-    # @property
-    # def scapacity(self):
-    #     return self.__scapacity
-    #
-    # @scapacity.setter
-    # def scapacity(self, x):
-    #     self.__scapacity = x
+    @property
+    def capacity(self):
+        return self.__capacity
+
+    @capacity.setter
+    def capacity(self, x):
+        self.__capacity = x
 
     @property
     def name(self):
@@ -60,7 +60,7 @@ class Game_map:
 
 
 class Train:
-    def __init__(self, game_map, size = 25, capacity = 0):
+    def __init__(self, game_map, size=25, capacity=0):
         self.__game_map = game_map
         self.__curr_station = game_map.stations[0]
         self.__size = size
@@ -73,32 +73,50 @@ class Train:
         self.__curr_station = self.__game_map.graph[self.__curr_station][key]
 
     def loading(self):
-        print(self.__curr_station.scapacity)
-        kolvo = int(input('kolvo tovara'))
-        self.__capacity += kolvo
-        self.__curr_station.scapacity = 4
-        # buf = self.__curr_station.scapacity - kolvo
-        # self.__curr_station.scapacity(buf)
+        print('на станции сейчас столько грузов:', self.__curr_station.capacity)
+        print('в поезде сейчас столько груза:', self.capacity)
+        kolvo = int(input('введите сколько товара забрать со станции: '))
+        while kolvo < 0 or self.__curr_station.scapacity - kolvo < 0:
+            print('на станции сейчас столько грузов:', self.__curr_station.capacity)
+            print('в поезде сейчас столько груза:', self.capacity)
+            kolvo = int(input('введите сколько товара забрать со станции: '))
+        if self.__capacity + kolvo <= self.__size:
+            self.__capacity += kolvo
+            self.__curr_station.capacity -= kolvo
+        else:
+            buf = self.__size - self.__capacity
+            self.__capacity = self.__size
+            self.__curr_station.capacity += -buf + kolvo
 
     def unloading(self):
-        print(self.__capacity)
-        kolvo = int(input('kolvo tovara vigryz'))
+        print('на станции сейчас столько грузов:', self.__curr_station.capacity)
+        print('в поезде сейчас столько груза:', self.capacity)
+        kolvo = int(input('введите сколько товара выгрузить на станцию: '))
+        while kolvo < 0 or self.__capacity - kolvo < 0:
+            print('на станции сейчас столько грузов:', self.__curr_station.capacity)
+            print('в поезде сейчас столько груза:', self.capacity)
+            kolvo = int(input('введите сколько товара выгрузить на станцию: '))
         self.__capacity -= kolvo
+        self.__curr_station.capacity += kolvo
         # self.__curr_station.capacity(self.__curr_station.capacity + kolvo)
 
     @property
     def curr_station(self):
         return self.__curr_station
 
+    @property
+    def capacity(self):
+        return self.__capacity
+
 
 if __name__ == '__main__':
     x = Game_map()
-    print(x.stations[2].scapacity)
     train = Train(x)
     train.go_to_station()
     print(train.curr_station.name)
     train.loading()
-    print(train.curr_station.scapacity)
-    train.unloading()
-
     print(train.curr_station.capacity)
+    print(train.capacity)
+    train.unloading()
+    print(train.curr_station.capacity)
+    print(train.capacity)
