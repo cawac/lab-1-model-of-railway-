@@ -1,5 +1,11 @@
+import time
+from time import *
+
+
 class Station:
-    def __init__(self, name, capacity=5, size=25):
+    def __init__(self, name, posx, posy, capacity=5, size=25, ):
+        self.__posx = posx
+        self.__posy = posy
         self.__capacity = capacity
         self.__size = size
         self.__name = name
@@ -28,13 +34,29 @@ class Station:
     def name(self, x):
         self.__name = x
 
+    @property
+    def posx(self):
+        return self.__posx
+
+    @posx.setter
+    def posx(self, new_posx):
+        self.__posx = new_posx
+
+    @property
+    def posy(self):
+        return self.__posy
+
+    @posy.setter
+    def posy(self, new_posy):
+        self.__posy = new_posy
+
 
 class Game_map:
     def __init__(self):
-        a = Station('a')
-        b = Station('b')
-        c = Station('c')
-        d = Station('d')
+        a = Station('a', 40, 40)
+        b = Station('b', 140, 140)
+        c = Station('c', 40, 140)
+        d = Station('d', 140, 40)
         self.__stations = [a, b, c, d]
         self.__graph = {self.__stations[0]: [self.__stations[1], self.__stations[2]],
                         self.__stations[1]: [self.__stations[2], self.__stations[3]]}
@@ -71,12 +93,13 @@ class Train:
             print(station.name, end=' ')
         key = int(input())
         self.__curr_station = self.__game_map.graph[self.__curr_station][key]
+        sleep(3)
 
     def loading(self):
         print('на станции сейчас столько грузов:', self.__curr_station.capacity)
         print('в поезде сейчас столько груза:', self.capacity)
         kolvo = int(input('введите сколько товара забрать со станции: '))
-        while kolvo < 0 or self.__curr_station.scapacity - kolvo < 0:
+        while kolvo < 0 or self.__curr_station.capacity - kolvo < 0:
             print('на станции сейчас столько грузов:', self.__curr_station.capacity)
             print('в поезде сейчас столько груза:', self.capacity)
             kolvo = int(input('введите сколько товара забрать со станции: '))
@@ -87,6 +110,7 @@ class Train:
             buf = self.__size - self.__capacity
             self.__capacity = self.__size
             self.__curr_station.capacity += -buf + kolvo
+        sleep(1)
 
     def unloading(self):
         print('на станции сейчас столько грузов:', self.__curr_station.capacity)
@@ -98,6 +122,7 @@ class Train:
             kolvo = int(input('введите сколько товара выгрузить на станцию: '))
         self.__capacity -= kolvo
         self.__curr_station.capacity += kolvo
+        sleep(1)
         # self.__curr_station.capacity(self.__curr_station.capacity + kolvo)
 
     @property
