@@ -4,10 +4,10 @@ import pygame
 
 
 class Station:
-    def __init__(self, name, posx, posy, size=25):
+    def __init__(self, name, posx, posy, size=25, ):
         self.__posx = posx
         self.__posy = posy
-        self.__capacity = random.randint(1, 7)
+        self.__capacity = random.randint(1,7)
         self.__size = size
         self.__name = name
 
@@ -87,12 +87,12 @@ class Game_map:
     def stations(self, x):
         self.__stations = x
 
-    def is_overload(self):
+    def check_overloading(self):
         for statione in self.__stations:
             if statione.capacity >= statione.size:
-                return True
-            else:
                 return False
+            else:
+                return True
 
 
 class Train:
@@ -101,22 +101,17 @@ class Train:
         self.__curr_station = game_map.stations[0]
         self.__size = size
         self.__capacity = capacity
-        self.__posx = float(self.__curr_station.posx)
-        self.__posy = float(self.__curr_station.posy)
 
-    def go_to_station(self):
+    def go_to_station(self, win):
+        # buffer = win
         for statione in self.__game_map.graph[self.__curr_station]:
             print(statione.name, end=' ')
-        start = self.__curr_station
         key = int(input())
         self.__curr_station = self.__game_map.graph[self.__curr_station][key]
-        end = self.__curr_station
-        first_time = time.time()
-        while time.time() - first_time <= 3:
-            pygame.time.delay(50)
-            self.__posx += (end.posx - start.posx) / 60
-            self.__posy += (end.posy - start.posy) / 60
-            draw_window(self, self.__game_map)
+        first_time1 = time.time()
+        # while time.time() - first_time1 <= 2:
+        #     buffer
+        time.sleep(2)
 
     def loading(self):
         print('на станции сейчас столько грузов:', self.__curr_station.capacity)
@@ -156,14 +151,6 @@ class Train:
     def capacity(self):
         return self.__capacity
 
-    @property
-    def posx(self):
-        return self.__posx
-
-    @property
-    def posy(self):
-        return self.__posy
-
 
 # def menu(x, train):
 #     first_time = time.time()
@@ -188,60 +175,62 @@ class Train:
 #     if x.check_overloading()
 #         print('ПОТРАЧЕНО')
 
-def draw_window(train, x):  # draw display
-    win.fill((0, 0, 0))  # fill background
-    for start in x.graph:  # drawing railways
-        for end in x.graph[start]:
-            pygame.draw.aaline(win, (255, 255, 255),
-                               [start.posx, start.posy],
-                               [end.posx, end.posy])
-    for station in x.stations:  # drawing stations
-        j = 0
-        pygame.draw.circle(win, (140, 200, 10),
-                           (station.posx, station.posy), 20)
-        for i in range(station.capacity):  # drawing goods
-            if i % 5 == 0:
-                j += 1
-            pygame.draw.rect(win, (200, 200, 200),
-                             (station.posx + 21 + i % 5 * 7, station.posy - 30 + j * 7, 5, 5))
-    pygame.draw.rect(win, (13, 85, 166), (train.posx, train.posy, 10, 10))        # need to draw train
-    # pygame.draw.polygon(win, (13, 85, 166),
-    #                     [[250, 110], [280, 150],
-    #                      [190, 190], [130, 130]])
-    # pygame.draw.aalines(sc, WHITE, True,
-    #                     [[250, 110], [280, 150],
-    #                      [190, 190], [130, 130]])
-    pygame.display.update()  # update display
-
 
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('train model')
     win = pygame.display.set_mode((500, 500))
-    railway_map = Game_map()
-    train = Train(railway_map)
-
+    x = Game_map()
+    train = Train(x)
     first_time = time.time()
-    while not railway_map.is_overload():
-        pygame.time.delay(50)
-        draw_window(train, railway_map)
+    # train.go_to_station()
+    # print(train.curr_station.name)
+    # train.loading()
+    # print(train.curr_station.capacity)
+    # print(train.capacity)
+    # train.unloading()
+    # print(train.curr_station.capacity)
+    # print(train.capacity)
+    run = True
+    while x.check_overloading():
+        pygame.time.delay(100)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
 
-        # if ((time.time() - first_time) > 20):
-        #     x.spawn()
-        #     first_time = time.time()
+        for start in x.graph:
+            for end in x.graph[start]:
+                pygame.draw.aaline(win, (255, 255, 255),
+                                   [start.posx, start.posy],
+                                   [end.posx, end.posy])
+        for station in x.stations:
+            j = 0
+            pygame.draw.circle(win, (140, 200, 10),
+                               (station.posx, station.posy), 20)
+            capacity = station.capacity
+            for i in range(capacity):
+                if i % 5 == 0:
+                    j += 1
+                pygame.draw.rect(win, (200, 200, 200),
+                                 (station.posx + 21 + i % 5 * 7, station.posy - 30 + j * 7, 5, 5))
+        pygame.display.update()
+
+        if ((time.time() - first_time) > 20):
+            x.spawn()
+            first_time = time.time()
         print(f'Поезд на [' + train.curr_station.name + '] станции')
         print('Что сделать?')
         key = input('(1) Следующая станция\n(2) Загрузить поезд\n(3) Разгрузить поезд\n')
         if key == '1':
             print('едем...')
-            train.go_to_station()
+            train.go_to_station(win)
         elif key == '2':
             print('загружаю...')
             train.loading()
         elif key == '3':
             print('разгружаю...')
             train.unloading()
-    if railway_map.is_overload():
-        print('ПОТРАЧЕНО')
-
-    # pygame.quit()
+        if x.check_overloading():
+            print('ПОТРАЧЕНО')
+        win.fill((0, 0, 0))
+    pygame.quit()
