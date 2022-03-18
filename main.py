@@ -103,6 +103,7 @@ class Train:
         self.__capacity = capacity
         self.__posx = float(self.__curr_station.posx)
         self.__posy = float(self.__curr_station.posy)
+        self.__cosa = 1.0
 
     def go_to_station(self):
         for statione in self.__game_map.graph[self.__curr_station]:
@@ -111,12 +112,15 @@ class Train:
         key = int(input())
         self.__curr_station = self.__game_map.graph[self.__curr_station][key]
         end = self.__curr_station
+        self.__cosa = abs(start.posx - end.posx) / (abs(start.posx - end.posx) ** 2 + abs(start.posy - end.posy) ** 2) ** 0.5
         first_time = time.time()
         while time.time() - first_time <= 3:
             pygame.time.delay(50)
             self.__posx += (end.posx - start.posx) / 60
             self.__posy += (end.posy - start.posy) / 60
             draw_window(self, self.__game_map)
+        self.__posx = self.__curr_station.posx
+        self.__posy = self.__curr_station.posy
 
     def loading(self):
         print('на станции сейчас столько грузов:', self.__curr_station.capacity)
@@ -164,6 +168,9 @@ class Train:
     def posy(self):
         return self.__posy
 
+    @property
+    def cosa(self):
+        return self.__cosa 
 
 # def menu(x, train):
 #     first_time = time.time()
@@ -188,6 +195,15 @@ class Train:
 #     if x.check_overloading()
 #         print('ПОТРАЧЕНО')
 
+
+def calc_point_x(x, y, a, b, cosa, sina):
+    return (x - a) * cosa - (y - b) * sina + a
+
+
+def calc_point_y(x, y, a, b, cosa, sina):
+    return (x - a) * sina + (y - b) * cosa + b
+
+
 def draw_window(train, x):  # draw display
     win.fill((0, 0, 0))  # fill background
     for start in x.graph:  # drawing railways
@@ -205,9 +221,12 @@ def draw_window(train, x):  # draw display
             pygame.draw.rect(win, (200, 200, 200),
                              (station.posx + 21 + i % 5 * 7, station.posy - 30 + j * 7, 5, 5))
     pygame.draw.rect(win, (13, 85, 166), (train.posx, train.posy, 10, 10))        # need to draw train
+    # sina = (1 - train.cosa ** 2) ** 0.5
     # pygame.draw.polygon(win, (13, 85, 166),
-    #                     [[250, 110], [280, 150],
-    #                      [190, 190], [130, 130]])
+    #                     [[calc_point_x(30, 20, train.posx, train.posy, sina, train.cosa), calc_point_y(30, 20, train.posx, train.posy, sina, train.cosa)],
+    #                      [calc_point_x(30, 20, train.posx, train.posy, sina, train.cosa), calc_point_y(30, 20, train.posx, train.posy, sina, train.cosa)],
+    #                      [calc_point_x(30, 20, train.posx, train.posy, sina, train.cosa), calc_point_y(30, 20, train.posx, train.posy, sina, train.cosa)],
+    #                      [calc_point_x(30, 20, train.posx, train.posy, sina, train.cosa), calc_point_y(30, 20, train.posx, train.posy, sina, train.cosa)]])
     # pygame.draw.aalines(sc, WHITE, True,
     #                     [[250, 110], [280, 150],
     #                      [190, 190], [130, 130]])
@@ -225,10 +244,9 @@ if __name__ == '__main__':
     while not railway_map.is_overload():
         pygame.time.delay(50)
         draw_window(train, railway_map)
-
-        # if ((time.time() - first_time) > 20):
-        #     x.spawn()
-        #     first_time = time.time()
+        if (time.time() - first_time) > 1:
+            railway_map.spawn()
+            first_time = time.time()
         print(f'Поезд на [' + train.curr_station.name + '] станции')
         print('Что сделать?')
         key = input('(1) Следующая станция\n(2) Загрузить поезд\n(3) Разгрузить поезд\n')
@@ -244,4 +262,4 @@ if __name__ == '__main__':
     if railway_map.is_overload():
         print('ПОТРАЧЕНО')
 
-    # pygame.quit()
+    pygame.quit()
